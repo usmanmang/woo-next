@@ -1,0 +1,10 @@
+body:has(#app) {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  display: block;
+  font-family: var(--font-body);
+}
+
+body:has(#app) #app {
+  min-height: 100%;
+}
