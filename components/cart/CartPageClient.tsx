@@ -1,14 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { useSyncExternalStore } from 'react'
+import MediaImage from '@/components/MediaImage'
 import { useCart } from '@/store/cart'
 
 function formatPrice(value: number) {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 }
 
-export default function CartPageClient() {
+export default function CartPageClient({ stockByProductId }: { stockByProductId: Record<string, number | null> }) {
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -17,8 +19,13 @@ export default function CartPageClient() {
   const items = useCart((state) => state.items)
   const removeItem = useCart((state) => state.removeItem)
   const updateQty = useCart((state) => state.updateQty)
+  const syncStock = useCart((state) => state.syncStock)
   const clearCart = useCart((state) => state.clearCart)
   const subtotal = useCart((state) => state.total())
+
+  useEffect(() => {
+    syncStock(stockByProductId)
+  }, [stockByProductId, syncStock])
 
   if (!mounted) {
     return (
@@ -65,10 +72,8 @@ export default function CartPageClient() {
         <div className="divide-y divide-border border-y border-border">
           {items.map((item) => (
             <div key={item.id} className="grid grid-cols-[96px_1fr] gap-5 py-6 sm:grid-cols-[128px_1fr_auto]">
-              <div className="aspect-square overflow-hidden bg-sand">
-                {item.image && (
-                  <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: `url(${item.image})` }} />
-                )}
+              <div className="relative aspect-square overflow-hidden bg-sand">
+                <MediaImage src={item.image} alt={item.name} sizes="128px" />
               </div>
               <div>
                 <h2 className="font-display text-2xl">{item.name}</h2>
@@ -90,6 +95,7 @@ export default function CartPageClient() {
                     <button
                       type="button"
                       onClick={() => updateQty(item.id, item.quantity + 1)}
+                      disabled={item.stockQty !== undefined && item.stockQty !== null && item.quantity >= item.stockQty}
                       className="px-3 py-2 hover:text-accent"
                       aria-label="Increase quantity"
                     >
@@ -104,6 +110,9 @@ export default function CartPageClient() {
                     Remove
                   </button>
                 </div>
+                {item.stockQty !== undefined && item.stockQty !== null && (
+                  <p className="mt-3 text-sm text-muted">{item.stockQty} available</p>
+                )}
               </div>
               <p className="font-label text-sm tracking-wider sm:text-right">
                 {formatPrice(item.price * item.quantity)}

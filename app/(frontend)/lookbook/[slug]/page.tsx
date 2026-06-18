@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
-import { getBackgroundImage } from '@/lib/media'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export const revalidate = 300
@@ -74,10 +74,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   })
   const post = docs[0]
 
-  if (!post) return { title: 'Journal Post Not Found | Furniture Studio' }
+  if (!post) return { title: 'Journal Post Not Found' }
 
   return {
-    title: `${post.title} | Furniture Studio`,
+    title: post.title,
     description: extractExcerpt(post.content as LookbookBlock[] | null | undefined),
   }
 }
@@ -109,13 +109,8 @@ export default async function LookbookEntryPage({ params }: { params: Promise<{ 
           <span className="text-foreground">{post.title}</span>
         </nav>
 
-        <div className="aspect-[16/9] bg-sand overflow-hidden mb-8">
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{ backgroundImage: getBackgroundImage(cover?.url) }}
-            role="img"
-            aria-label={cover?.alt || ''}
-          />
+        <div className="relative aspect-[16/9] bg-sand overflow-hidden mb-8">
+          <MediaImage src={cover?.url} alt={cover?.alt || post.title} sizes="(min-width: 768px) 768px, 100vw" priority />
         </div>
 
         <p className="font-label text-xs tracking-widest uppercase text-muted mb-3">
@@ -132,13 +127,8 @@ export default async function LookbookEntryPage({ params }: { params: Promise<{ 
             : 'max-w-3xl mx-auto px-6 mb-8'
           return (
             <div key={i} className={wrapperClass}>
-              <div className="aspect-[16/9] bg-sand overflow-hidden">
-                <div
-                  className="w-full h-full bg-cover bg-center"
-                  style={{ backgroundImage: getBackgroundImage(img?.url) }}
-                  role="img"
-                  aria-label={img?.alt || block.caption || ''}
-                />
+              <div className="relative aspect-[16/9] bg-sand overflow-hidden">
+                <MediaImage src={img?.url} alt={img?.alt || block.caption || ''} sizes={block.fullWidth ? '100vw' : '(min-width: 768px) 768px, 100vw'} />
               </div>
               {block.caption && (
                 <p className="text-sm text-muted mt-3 font-label tracking-wide text-center">
@@ -160,15 +150,12 @@ export default async function LookbookEntryPage({ params }: { params: Promise<{ 
         if (block.blockType === 'productTag') {
           const product = block.product as ProductType | undefined
           if (!product?.slug) return null
-          const backgroundImage = getBackgroundImage(product.images?.[0]?.image?.url)
+          const image = product.images?.[0]?.image
           return (
             <div key={i} className="max-w-3xl mx-auto px-6 mb-8">
               <div className="border border-border p-6 flex items-center gap-6">
-                <div className="w-24 h-24 bg-sand flex-shrink-0 overflow-hidden">
-                  <div
-                    className="w-full h-full bg-cover bg-center"
-                    style={{ backgroundImage }}
-                  />
+                <div className="relative w-24 h-24 bg-sand flex-shrink-0 overflow-hidden">
+                  <MediaImage src={image?.url} alt={image?.alt || product.name} sizes="96px" />
                 </div>
                 <div>
                   <p className="font-label text-[10px] tracking-[0.2em] uppercase text-muted mb-1">Featured Product</p>

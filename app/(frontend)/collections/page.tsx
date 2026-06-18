@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
-import { getBackgroundImage } from '@/lib/media'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export const revalidate = 600
 
 export const metadata: Metadata = {
-  title: 'Collections | Furniture Studio',
+  title: 'Collections',
   description: 'Explore curated furniture collections for considered modern living.',
 }
 
@@ -24,7 +24,7 @@ function extractExcerpt(richText: RichTextContent | null | undefined, maxLen = 1
   return text.length > maxLen ? text.slice(0, maxLen) + '...' : text
 }
 
-type MediaType = { url?: string | null }
+type MediaType = { url?: string | null; alt?: string | null }
 
 export default async function CollectionsPage() {
   const payload = await getPayload({ config })
@@ -53,7 +53,7 @@ export default async function CollectionsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {collections.map((col) => {
-            const backgroundImage = getBackgroundImage((col.heroImage as MediaType | undefined)?.url)
+            const heroImage = col.heroImage as MediaType | undefined
             const excerpt = extractExcerpt(col.description as RichTextContent | null | undefined)
             return (
               <Link
@@ -61,10 +61,7 @@ export default async function CollectionsPage() {
                 href={`/collections/${col.slug}`}
                 className="group relative h-[55vh] min-h-[420px] overflow-hidden"
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                  style={{ backgroundImage }}
-                />
+                <MediaImage src={heroImage?.url} alt={heroImage?.alt || col.title} sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
                 {col.featured && (

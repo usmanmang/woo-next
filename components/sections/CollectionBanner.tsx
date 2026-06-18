@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export default async function CollectionBanner() {
@@ -12,15 +13,12 @@ export default async function CollectionBanner() {
   })
 
   const collection = collections[0]
-  const heroImage = collection?.heroImage as { url?: string } | undefined
+  const heroImage = collection?.heroImage as { url?: string; alt?: string | null } | undefined
 
   return (
     <section className="relative h-[70vh] min-h-[500px] flex items-center">
       {heroImage?.url ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage.url})` }}
-        />
+        <MediaImage src={heroImage.url} alt={heroImage.alt || collection?.title || ''} sizes="100vw" className="object-cover" />
       ) : (
         <div className="absolute inset-0 bg-accent/40" />
       )}

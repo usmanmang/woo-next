@@ -1,8 +1,15 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export const revalidate = 600
+
+export const metadata: Metadata = {
+  title: 'Shop',
+  description: 'Shop premium furniture by category, room, and style.',
+}
 
 const roomOptions = [
   { label: 'Living Room', value: 'living-room' },
@@ -161,17 +168,14 @@ export default async function ShopPage({ searchParams }: { searchParams?: Promis
 
       {products.length > 0 && <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => {
-          const images = (product.images as { image: { url?: string } }[]) || []
-          const firstImage = images[0]?.image?.url
+          const images = (product.images as { image: { url?: string; alt?: string | null } }[]) || []
+          const firstImage = images[0]?.image
           const hasSale = product.comparePrice && product.comparePrice > product.price
 
           return (
             <Link key={product.slug} href={`/shop/${product.slug}`} className="group">
               <div className="relative aspect-square bg-sand overflow-hidden mb-4">
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${firstImage || ''})` }}
-                />
+                  <MediaImage src={firstImage?.url} alt={firstImage?.alt || product.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 {hasSale && (
                   <span className="absolute top-3 left-3 bg-foreground text-background text-[10px] font-label tracking-wider px-2 py-1 uppercase">
                     Sale

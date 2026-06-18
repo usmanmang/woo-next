@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About',
+  description: 'Learn about Furniture Studio, our design philosophy, craftsmanship, and curated furniture selection.',
+}
+
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">

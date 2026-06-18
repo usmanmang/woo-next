@@ -60,10 +60,11 @@ export default function Footer({ footerText, navLinks = [], siteName }: FooterPr
           <div className="flex gap-2">
             <input
               type="email"
+              aria-label="Email address for newsletter"
               placeholder="Your email"
               className="flex-1 bg-white/10 border border-white/20 px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:border-accent"
             />
-            <button className="bg-accent text-background px-4 py-2 text-sm font-label tracking-wider hover:bg-accent/90 transition-colors">
+            <button type="button" className="bg-accent text-background px-4 py-2 text-sm font-label tracking-wider hover:bg-accent/90 transition-colors">
               Subscribe
             </button>
           </div>

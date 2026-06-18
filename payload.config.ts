@@ -19,31 +19,64 @@ import { Navigation } from './globals/Navigation'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const mongoURL = process.env.MONGODB_URI || 'mongodb://localhost/furniture-db'
+const cloudinaryConfig = {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+}
+const hasCloudinaryConfig = Boolean(cloudinaryConfig.cloud_name && cloudinaryConfig.api_key && cloudinaryConfig.api_secret)
 
-export default buildConfig({
-  sharp,
-  serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  admin: {
-    user: Users.slug,
-    meta: {
-      title: 'Furniture Admin',
-      description: 'Admin panel for the furniture store',
+if (process.env.VERCEL && !hasCloudinaryConfig) {
+  throw new Error('Cloudinary environment variables are required on Vercel: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET')
+}
+
+export default (async () => {
+  const cloudinaryPlugin = hasCloudinaryConfig
+    ? (await import('payload-storage-cloudinary')).cloudinaryStorage({
+        cloudConfig: cloudinaryConfig,
+        collections: {
+          media: {
+            folder: 'furniture-studio/media',
+            transformations: {
+              default: {
+                quality: 'auto',
+                fetch_format: 'auto',
+              },
+              preserveOriginal: true,
+            },
+            resourceType: 'auto',
+            deleteFromCloudinary: true,
+          },
+        },
+      })
+    : null
+
+  return buildConfig({
+    sharp,
+    serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    admin: {
+      user: Users.slug,
+      meta: {
+        title: 'Furniture Admin',
+        description: 'Admin panel for the furniture store',
+      },
     },
-  },
-  collections: [Products, Categories, Collections, Lookbook, Orders, Users, Media],
-  globals: [SiteSettings, Navigation],
-  editor: lexicalEditor(),
-  db: mongooseAdapter({
-    url: mongoURL,
-  }),
-  secret: process.env.PAYLOAD_SECRET!,
-  typescript: {
-    outputFile: path.resolve(dirname, 'types/payload-types.ts'),
-  },
-  plugins: [
-    seoPlugin({
-      collections: ['products', 'categories', 'collections'],
-      uploadsCollection: 'media',
+    collections: [Products, Categories, Collections, Lookbook, Orders, Users, Media],
+    globals: [SiteSettings, Navigation],
+    editor: lexicalEditor(),
+    db: mongooseAdapter({
+      url: mongoURL,
     }),
-  ],
-})
+    secret: process.env.PAYLOAD_SECRET!,
+    typescript: {
+      outputFile: path.resolve(dirname, 'types/payload-types.ts'),
+    },
+    plugins: [
+      ...(cloudinaryPlugin ? [cloudinaryPlugin] : []),
+      seoPlugin({
+        collections: ['products', 'categories', 'collections'],
+        uploadsCollection: 'media',
+      }),
+    ],
+  })
+})()

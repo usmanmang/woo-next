@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
-import { getBackgroundImage } from '@/lib/media'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export const revalidate = 600
 
 export const metadata: Metadata = {
-  title: 'Journal | Furniture Studio',
+  title: 'Journal',
   description: 'Furniture stories, styling notes, and lookbook inspiration for modern interiors.',
 }
 
@@ -36,14 +36,11 @@ export default async function LookbookPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => {
-            const cover = post.coverImage as { url?: string | null } | undefined
+            const cover = post.coverImage as { url?: string | null; alt?: string | null } | undefined
             return (
               <Link key={post.slug} href={`/lookbook/${post.slug}`} className="group">
-                <div className="aspect-[4/3] bg-sand overflow-hidden mb-4">
-                  <div
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                    style={{ backgroundImage: getBackgroundImage(cover?.url) }}
-                  />
+                <div className="relative aspect-[4/3] bg-sand overflow-hidden mb-4">
+                  <MediaImage src={cover?.url} alt={cover?.alt || post.title} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <p className="text-xs text-muted font-label tracking-wider uppercase mb-2">
                   {post.date ? formatDate(post.date as string) : ''}

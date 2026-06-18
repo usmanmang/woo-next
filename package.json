@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test lib/**/*.test.ts",
-    "generate:types": "payload generate:types",
+    "generate:types": "tsx scripts/generate-types.ts",
     "seed": "tsx --env-file=.env.local scripts/seed.ts"
   },
   "dependencies": {
@@ -16,18 +16,18 @@
     "@payloadcms/next": "^3.85.1",
     "@payloadcms/plugin-seo": "^3.85.1",
     "@payloadcms/richtext-lexical": "^3.85.1",
-    "@stripe/stripe-js": "^9.8.0",
     "framer-motion": "^12.40.0",
     "next": "16.2.9",
     "payload": "^3.85.1",
+    "payload-storage-cloudinary": "^1.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.12.4",
     "sharp": "^0.34.5",
-    "stripe": "^22.2.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@swc-node/register": "^1.11.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

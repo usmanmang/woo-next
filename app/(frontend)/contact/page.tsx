@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Contact',
+  description: 'Contact Furniture Studio for product questions, delivery support, or interior design advice.',
+}
+
 export default function ContactPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">

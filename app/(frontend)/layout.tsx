@@ -25,11 +25,19 @@ const label = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: 'Furniture Studio',
-  description: 'Premium furniture for modern living',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: {
+    default: 'Furniture Studio',
+    template: '%s | Furniture Studio',
+  },
+  description: 'Premium furniture, curated collections, and design-led pieces for modern living.',
+  openGraph: {
+    title: 'Furniture Studio',
+    description: 'Premium furniture, curated collections, and design-led pieces for modern living.',
+    siteName: 'Furniture Studio',
+    type: 'website',
+  },
 }
-
-export const revalidate = 60
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const payload = await getPayload({ config })
@@ -41,6 +49,9 @@ export default async function FrontendLayout({ children }: { children: React.Rea
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${label.variable} scroll-smooth`}>
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <div className="min-h-screen antialiased flex flex-col bg-background text-foreground font-body">
           <Header
             announcementActive={settings.announcementActive}
@@ -48,7 +59,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
             navLinks={navigation.mainMenu}
             siteName={settings.siteName}
           />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
           <Footer footerText={settings.footerText} navLinks={navigation.mainMenu} siteName={settings.siteName} />
         </div>
       </body>

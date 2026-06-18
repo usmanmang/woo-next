@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export default async function Hero() {
@@ -17,10 +18,7 @@ export default async function Hero() {
     <section className="relative h-[90vh] min-h-[600px] flex items-center">
       <div className="absolute inset-0 bg-sand" />
       {bgImage?.url ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${bgImage.url})` }}
-        />
+        <MediaImage src={bgImage.url} alt="" priority className="object-cover" />
       ) : (
         <div className="absolute inset-0 bg-accent/30" />
       )}

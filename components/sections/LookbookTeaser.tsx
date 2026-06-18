@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 function formatDate(date: string): string {
@@ -34,14 +35,11 @@ export default async function LookbookTeaser() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {posts.map((post) => {
-          const cover = post.coverImage as { url?: string } | undefined
+          const cover = post.coverImage as { url?: string; alt?: string | null } | undefined
           return (
             <Link key={post.slug} href={`/lookbook/${post.slug}`} className="group">
-              <div className="aspect-[4/3] bg-sand overflow-hidden mb-4">
-                <div
-                  className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${cover?.url || ''})` }}
-                />
+              <div className="relative aspect-[4/3] bg-sand overflow-hidden mb-4">
+                <MediaImage src={cover?.url} alt={cover?.alt || post.title} sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
               <p className="text-xs text-muted font-label tracking-wider uppercase mb-2">
                 {post.date ? formatDate(post.date as string) : ''}

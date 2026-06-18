@@ -1,5 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
+const useCloudinaryStorage = Boolean(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+)
+
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
@@ -10,6 +16,7 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: 'media',
+    disableLocalStorage: useCloudinaryStorage,
     imageSizes: [
       {
         name: 'thumbnail',

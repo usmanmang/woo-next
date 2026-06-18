@@ -45,6 +45,8 @@ export default function Header({ announcementActive, announcementBar, navLinks =
             className="md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M3 6h18M3 12h18M3 18h18" />
@@ -110,7 +112,7 @@ export default function Header({ announcementActive, announcementBar, navLinks =
 
       {mobileOpen && (
         <div className="md:hidden absolute inset-x-0 top-full bg-background border-b border-border px-6 py-4">
-          <nav className="flex flex-col gap-4 font-label text-sm tracking-widest uppercase">
+          <nav id="mobile-navigation" className="flex flex-col gap-4 font-label text-sm tracking-widest uppercase">
             {links.map((link) => (
               <Link
                 key={link.label}

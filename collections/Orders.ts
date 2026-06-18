@@ -11,7 +11,25 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     { name: 'orderNumber', type: 'text' },
-    { name: 'stripePaymentIntentId', type: 'text' },
+    {
+      name: 'paymentMethod',
+      type: 'select',
+      options: [
+        { label: 'Cash on Delivery', value: 'cod' },
+        { label: 'Bank Transfer', value: 'bank-transfer' },
+        { label: 'JazzCash', value: 'jazzcash' },
+        { label: 'EasyPaisa', value: 'easypaisa' },
+      ],
+      defaultValue: 'cod',
+    },
+    {
+      name: 'paymentStatus',
+      type: 'select',
+      options: ['pending', 'awaiting-confirmation', 'paid', 'failed', 'refunded'],
+      defaultValue: 'pending',
+    },
+    { name: 'paymentReference', type: 'text' },
+    { name: 'customerNote', type: 'textarea' },
     {
       name: 'status',
       type: 'select',

@@ -9,7 +9,7 @@ Design reference: https://sites.kaliumtheme.com/elementor/furniture/
 - Payload CMS runs embedded in Next.js (no separate server). Admin at `/admin`, REST at `/api/[...slug]`.
 - All server-side data fetching uses Payload **Local API** — import `getPayload` with `@/payload.config`. No HTTP overhead.
 - Cart state: Zustand store persisted to `localStorage` (client-only).
-- Payments: Stripe PaymentIntent via Server Action → webhook → creates Order in Payload.
+- Payments: Manual/offline checkout methods create pending Orders in Payload. Supported methods: COD, bank transfer, JazzCash, EasyPaisa.
 - Types auto-generated: `npm run generate:types` → `types/payload-types.ts`.
 - Admin page pattern: `app/(payload)/layout.tsx` wraps with `RootLayout` from `@payloadcms/next/layouts`; `app/(payload)/admin/[[...segments]]/page.tsx` renders `RootPage` from `@payloadcms/next/views`.
 - API route handler at `app/api/[...slug]/route.ts` — route param name must be `slug` (Payload expects this, not `payload`).
@@ -24,7 +24,7 @@ collections/          → Products, Categories, Collections, Lookbook, Orders, U
 globals/              → SiteSettings, Navigation
 components/           → layout/ (Header, Footer), sections/ (Hero, CategoryGrid, FeaturedProducts, CollectionBanner, LookbookTeaser, Newsletter)
 scripts/              → seed.ts (dummy content seeder)
-lib/                  → payload.ts, stripe.ts, utils.ts
+lib/                  → payload.ts, media.ts, utils.ts
 store/                → Zustand cart store
 ```
 
@@ -52,7 +52,6 @@ Runs via `npx tsx --env-file=.env.local scripts/seed.ts`. Creates 44 media entri
 
 - **Multi-lockfile warning**: Set `turbopack: { root: process.cwd() }` in `next.config.ts` to silence the lockfile detection warning if it appears.
 - **Tailwind v4**: Theme tokens go in `@theme inline` blocks inside `app/globals.css`, NOT in a standalone `tailwind.config.ts`. No `tailwind.config.ts` file exists.
-- **Stripe API version**: Must match the latest Stripe TypeScript types. If a type error occurs, update the `apiVersion` string in `lib/stripe.ts` to match what `stripe` package expects.
 - **Sharp**: Must be in `dependencies` (not devDependencies) for production image optimization on Vercel.
 
 ## Data fetching cache
@@ -89,14 +88,14 @@ Use `depth: 1` to populate upload relationships (media URLs, etc.). Without dept
 
 ```
 Add item → Zustand store → persisted to localStorage
-Checkout → Server Action validates items → creates Stripe PaymentIntent
-         → returns clientSecret → Stripe Elements handles payment
-         → webhook creates Order in Payload → sends email
+Checkout → Server Action validates items → creates pending Order in Payload
+         → customer receives COD/bank/JazzCash/EasyPaisa instructions
+         → admin verifies payment and processes order
 ```
 
 ## Environment variables required
 
-`NEXT_PUBLIC_SITE_URL`, `PAYLOAD_SECRET`, `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`
+`NEXT_PUBLIC_SITE_URL`, `PAYLOAD_SECRET`, `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `RESEND_API_KEY`
 
 ## Collections summary
 
@@ -104,7 +103,7 @@ Checkout → Server Action validates items → creates Stripe PaymentIntent
 - **Categories** — name, slug, description, image, featuredOnHome, order
 - **Collections** — title, slug, tagline, description, heroImage, products[], featured
 - **Lookbook** — title, slug, coverImage, date, content (blocks: imageBlock, textBlock, productTag)
-- **Orders** — orderNumber, stripePaymentIntentId, status, items[], subtotal, shipping, total, shippingAddress
+- **Orders** — orderNumber, status, paymentMethod, paymentStatus, paymentReference, customerNote, items[], subtotal, shipping, total, shippingAddress
 
 ## Development phases
 
@@ -112,5 +111,5 @@ Checkout → Server Action validates items → creates Stripe PaymentIntent
 2. **Layout & Homepage** — Header, Footer, Hero, CategoryGrid, FeaturedProducts, CollectionBanner, LookbookTeaser, Newsletter + dynamic data seeding
 3. **Shop & Product** — listing with filters, single product, cart drawer
 4. **Collections & Lookbook** — listing + detail pages
-5. **Checkout & Orders** — Stripe flow, Order creation, confirmation email
+5. **Checkout & Orders** — Manual payment flow, Order creation, confirmation email
 6. **Polish** — Framer Motion animations, SEO, perf, mobile QA

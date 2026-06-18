@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export default async function FeaturedProducts() {
@@ -31,8 +32,8 @@ export default async function FeaturedProducts() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => {
-          const images = (product.images as { image: { url?: string } }[]) || []
-          const firstImage = images[0]?.image?.url
+          const images = (product.images as { image: { url?: string; alt?: string | null } }[]) || []
+          const firstImage = images[0]?.image
           const hasSale = product.comparePrice && product.comparePrice > product.price
           const discount = hasSale
             ? `-${Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)}%`
@@ -41,10 +42,7 @@ export default async function FeaturedProducts() {
           return (
             <Link key={product.slug} href={`/shop/${product.slug}`} className="group">
               <div className="relative aspect-square bg-sand overflow-hidden mb-4">
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${firstImage || ''})` }}
-                />
+                <MediaImage src={firstImage?.url} alt={firstImage?.alt || product.name} sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 {discount && (
                   <span className="absolute top-3 left-3 bg-foreground text-background text-[10px] font-label tracking-wider px-2 py-1 uppercase">
                     {discount}

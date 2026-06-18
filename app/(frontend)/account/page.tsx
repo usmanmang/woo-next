@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Account',
+  description: 'Sign in to view your Furniture Studio orders and account details.',
+}
+
 export default function AccountPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16 text-center">

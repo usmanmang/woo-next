@@ -16,6 +16,7 @@ type AddToCartProps = {
     name: string
     price: number
     inStock?: boolean | null
+    stockQty?: number | null
     image?: string
     variants?: Variant[] | null
   }
@@ -23,25 +24,31 @@ type AddToCartProps = {
 
 export default function AddToCart({ product }: AddToCartProps) {
   const addItem = useCart((state) => state.addItem)
+  const items = useCart((state) => state.items)
   const [quantity, setQuantity] = useState(1)
   const [variantIndex, setVariantIndex] = useState('')
   const [added, setAdded] = useState(false)
 
   const variant = variantIndex !== '' ? product.variants?.[Number(variantIndex)] : undefined
   const variantLabel = variant ? [variant.name, variant.value].filter(Boolean).join(': ') : undefined
+  const cartItemId = variantLabel ? `${product.id}:${variantLabel}` : String(product.id)
+  const currentCartQty = items.find((item) => item.id === cartItemId)?.quantity || 0
+  const stockQty = product.stockQty ?? null
+  const remainingQty = stockQty === null ? Infinity : Math.max(stockQty - currentCartQty, 0)
   const price = product.price + (variant?.priceModifier || 0)
-  const canAdd = product.inStock && (variant ? variant.inStock !== false : true)
+  const canAdd = product.inStock && (variant ? variant.inStock !== false : true) && remainingQty > 0
 
   function handleAdd() {
     if (!canAdd) return
 
     addItem({
-      id: variantLabel ? `${product.id}:${variantLabel}` : String(product.id),
+      id: cartItemId,
       productId: String(product.id),
       name: product.name,
       price,
-      quantity,
+      quantity: Math.min(quantity, remainingQty),
       image: product.image || '',
+      stockQty,
       variant: variantLabel,
     })
     setAdded(true)
@@ -84,7 +91,8 @@ export default function AddToCart({ product }: AddToCartProps) {
           <span className="font-label text-sm">{quantity}</span>
           <button
             type="button"
-            onClick={() => setQuantity((current) => current + 1)}
+            onClick={() => setQuantity((current) => Math.min(current + 1, remainingQty))}
+            disabled={remainingQty !== Infinity && quantity >= remainingQty}
             className="px-4 py-3 text-lg leading-none hover:text-accent"
             aria-label="Increase quantity"
           >
@@ -102,6 +110,12 @@ export default function AddToCart({ product }: AddToCartProps) {
         </button>
       </div>
 
+      {stockQty !== null && canAdd && (
+        <p className="text-sm text-muted">{remainingQty} available</p>
+      )}
+      {stockQty !== null && remainingQty === 0 && product.inStock && (
+        <p className="text-sm text-muted">You have added all available stock to your cart.</p>
+      )}
       {added && <p className="font-label text-xs tracking-widest text-accent uppercase">Added to cart</p>}
     </div>
   )

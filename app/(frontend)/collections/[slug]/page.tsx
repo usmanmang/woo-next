@@ -2,12 +2,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
-import { getBackgroundImage } from '@/lib/media'
+import MediaImage from '@/components/MediaImage'
 import config from '@/payload.config'
 
 export const revalidate = 300
 
-type MediaType = { url?: string | null }
+type MediaType = { url?: string | null; alt?: string | null }
 type ProductPreview = {
   name?: string
   slug?: string
@@ -70,10 +70,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   })
   const collection = docs[0]
 
-  if (!collection) return { title: 'Collection Not Found | Furniture Studio' }
+  if (!collection) return { title: 'Collection Not Found' }
 
   return {
-    title: `${collection.title} | Furniture Studio`,
+    title: collection.title,
     description: extractExcerpt(collection.description as RichTextContent | null | undefined) || collection.tagline || undefined,
   }
 }
@@ -104,7 +104,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
     <div>
       <section className="relative h-[60vh] min-h-[400px] flex items-center">
         {heroImage?.url ? (
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage.url})` }} />
+          <MediaImage src={heroImage.url} alt={heroImage.alt || collection.title} sizes="100vw" priority />
         ) : (
           <div className="absolute inset-0 bg-accent/20" />
         )}
@@ -135,14 +135,11 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product) => {
-              const backgroundImage = getBackgroundImage(product.images?.[0]?.image?.url)
+              const image = product.images?.[0]?.image
               return (
                 <Link key={product.slug} href={`/shop/${product.slug}`} className="group">
-                  <div className="aspect-square bg-sand overflow-hidden mb-4">
-                    <div
-                      className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                      style={{ backgroundImage }}
-                    />
+                  <div className="relative aspect-square bg-sand overflow-hidden mb-4">
+                    <MediaImage src={image?.url} alt={image?.alt || product.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <h3 className="font-body text-sm mb-1">{product.name}</h3>
                   <p className="font-label text-xs tracking-wider">
@@ -163,17 +160,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
               {moreCollections.docs.map((col) => {
                 const collectionPreview = col as CollectionPreview
                 const heroImage = collectionPreview.heroImage as MediaType | undefined
-                const backgroundImage = getBackgroundImage(heroImage?.url)
                 return (
                   <Link
                     key={collectionPreview.slug}
                     href={`/collections/${collectionPreview.slug}`}
                     className="group relative h-64 overflow-hidden"
                   >
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                      style={{ backgroundImage }}
-                    />
+                    <MediaImage src={heroImage?.url} alt={heroImage?.alt || collectionPreview.title} sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="relative h-full flex flex-col justify-end p-6">
                       <p className="font-label text-xs tracking-[0.2em] uppercase text-white/70 mb-1">{collectionPreview.tagline}</p>

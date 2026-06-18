@@ -69,9 +69,13 @@ const categoryData = [
   { name: 'Outdoor', slug: 'outdoor', desc: 'Garden furniture, loungers, benches and outdoor accessories.' },
 ]
 
+type ProductTag = 'new' | 'bestseller' | 'sale' | 'featured'
+type ProductRoom = 'living-room' | 'bedroom' | 'dining' | 'office' | 'outdoor'
+type ProductStyle = 'minimalist' | 'scandinavian' | 'industrial' | 'japandi' | 'mid-century'
+
 const productData: Array<{
   name: string; slug: string; price: number; comparePrice?: number; category: string; imageCount: number;
-  tags: string[]; room: string[]; style: string[]; sku?: string; inStock: boolean; stockQty?: number;
+  tags: ProductTag[]; room: ProductRoom[]; style: ProductStyle[]; sku?: string; inStock: boolean; stockQty?: number;
   details: { materials: string; dimensions: string; weight: string; careInstructions: string; origin: string };
 }> = [
   { name: 'Eve Armchair', slug: 'eve-armchair', price: 1490, comparePrice: 1790, category: 'living-room', imageCount: 2, tags: ['featured', 'bestseller'], room: ['living-room'], style: ['scandinavian'], sku: 'EVE-001', inStock: true, stockQty: 12, details: { materials: 'Oak frame, wool upholstery', dimensions: 'W78 x D82 x H98 cm', weight: '18 kg', careInstructions: 'Professional cleaning only', origin: 'Denmark' } },
@@ -124,7 +128,35 @@ const navigationData = {
   ],
 }
 
-function lexicalRichText(text: string) {
+type SeedRichText = {
+  root: {
+    type: string
+    format: ''
+    indent: number
+    version: number
+    children: Array<{
+      type: string
+      format: ''
+      indent: number
+      version: number
+      children: Array<{
+        type: string
+        format: number
+        mode: string
+        detail: number
+        style: string
+        text: string
+        version: number
+      }>
+      direction: 'ltr'
+      textStyle: string
+      textFormat: number
+    }>
+    direction: 'ltr'
+  }
+}
+
+function lexicalRichText(text: string): SeedRichText {
   return {
     root: {
       type: 'root',
@@ -150,18 +182,18 @@ async function downloadImage(url: string): Promise<Buffer> {
   return Buffer.from(arrayBuffer)
 }
 
-async function createMedia(payload: Payload, alt: string, slug: string, filename: string): Promise<string | number> {
+async function createMedia(payload: Payload, alt: string, slug: string, filename: string): Promise<string> {
   const pexelsId = pexelsMap[slug]
   if (!pexelsId) throw new Error(`No Pexels ID mapped for slug: ${slug}`)
 
   const url = pexelsUrl(pexelsId)
   const buffer = await downloadImage(url)
 
-  return (await payload.create({
+  return String((await payload.create({
     collection: 'media',
     data: { alt },
     file: { data: buffer, mimetype: 'image/jpeg', name: filename, size: buffer.length },
-  })).id
+  })).id)
 }
 
 async function seed() {
@@ -174,9 +206,9 @@ async function seed() {
   }
 
   console.log('Downloading images from Pexels...')
-  const mediaCache: Record<string, string | number> = {}
+  const mediaCache: Record<string, string> = {}
 
-  async function getMedia(alt: string, slug: string, filename: string): Promise<string | number> {
+  async function getMedia(alt: string, slug: string, filename: string): Promise<string> {
     if (!mediaCache[slug]) {
       mediaCache[slug] = await createMedia(payload, alt, slug, filename)
       console.log(`  Created media: ${alt}`)
@@ -184,8 +216,8 @@ async function seed() {
     return mediaCache[slug]
   }
 
-  const productMap: Record<string, string | number> = {}
-  const categoryMap: Record<string, string | number> = {}
+  const productMap: Record<string, string> = {}
+  const categoryMap: Record<string, string> = {}
 
   console.log('Creating categories...')
   for (const cat of categoryData) {
@@ -201,13 +233,13 @@ async function seed() {
         order: categoryData.indexOf(cat),
       },
     })
-    categoryMap[cat.slug] = created.id
+    categoryMap[cat.slug] = String(created.id)
     console.log(`  Created category: ${cat.name}`)
   }
 
   console.log('Creating products...')
   for (const prod of productData) {
-    const images: Array<string | number> = []
+    const images: string[] = []
     for (let i = 0; i < prod.imageCount; i++) {
       images.push(await getMedia(`${prod.name} ${i + 1}`, `prod-${prod.slug}-${i + 1}`, `${prod.slug}-${i + 1}.jpg`))
     }
@@ -230,7 +262,7 @@ async function seed() {
         details: prod.details,
       },
     })
-    productMap[prod.slug] = created.id
+    productMap[prod.slug] = String(created.id)
     console.log(`  Created product: ${prod.name}`)
   }
 
