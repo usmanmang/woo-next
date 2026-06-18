@@ -26,10 +26,6 @@ const cloudinaryConfig = {
 }
 const hasCloudinaryConfig = Boolean(cloudinaryConfig.cloud_name && cloudinaryConfig.api_key && cloudinaryConfig.api_secret)
 
-if (process.env.VERCEL && !hasCloudinaryConfig) {
-  throw new Error('Cloudinary environment variables are required on Vercel: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET')
-}
-
 export default (async () => {
   const cloudinaryPlugin = hasCloudinaryConfig
     ? (await import('payload-storage-cloudinary')).cloudinaryStorage({
