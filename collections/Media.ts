@@ -1,10 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-const useCloudinaryStorage = Boolean(
-  process.env.CLOUDINARY_CLOUD_NAME &&
-  process.env.CLOUDINARY_API_KEY &&
-  process.env.CLOUDINARY_API_SECRET
-)
+const useVercelBlobStorage = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -16,7 +12,7 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: 'media',
-    disableLocalStorage: useCloudinaryStorage,
+    disableLocalStorage: useVercelBlobStorage,
     imageSizes: [
       {
         name: 'thumbnail',

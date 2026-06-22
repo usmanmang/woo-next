@@ -95,7 +95,7 @@ Checkout → Server Action validates items → creates pending Order in Payload
 
 ## Environment variables required
 
-`NEXT_PUBLIC_SITE_URL`, `PAYLOAD_SECRET`, `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `RESEND_API_KEY`
+`NEXT_PUBLIC_SITE_URL`, `PAYLOAD_SECRET`, `MONGODB_URI`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY`
 
 ## Collections summary
 
@@ -107,7 +107,7 @@ Checkout → Server Action validates items → creates pending Order in Payload
 
 ## Development phases
 
-1. **Foundation** — scaffold, MongoDB, Cloudinary, collections, Tailwind, fonts
+1. **Foundation** — scaffold, MongoDB, Vercel Blob media storage, collections, Tailwind, fonts
 2. **Layout & Homepage** — Header, Footer, Hero, CategoryGrid, FeaturedProducts, CollectionBanner, LookbookTeaser, Newsletter + dynamic data seeding
 3. **Shop & Product** — listing with filters, single product, cart drawer
 4. **Collections & Lookbook** — listing + detail pages

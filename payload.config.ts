@@ -2,6 +2,7 @@ import { buildConfig } from 'payload'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -19,34 +20,8 @@ import { Navigation } from './globals/Navigation'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const mongoURL = process.env.MONGODB_URI || 'mongodb://localhost/furniture-db'
-const cloudinaryConfig = {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-}
-const hasCloudinaryConfig = Boolean(cloudinaryConfig.cloud_name && cloudinaryConfig.api_key && cloudinaryConfig.api_secret)
 
 export default (async () => {
-  const cloudinaryPlugin = hasCloudinaryConfig
-    ? (await import('payload-storage-cloudinary')).cloudinaryStorage({
-        cloudConfig: cloudinaryConfig,
-        collections: {
-          media: {
-            folder: 'furniture-studio/media',
-            transformations: {
-              default: {
-                quality: 'auto',
-                fetch_format: 'auto',
-              },
-              preserveOriginal: true,
-            },
-            resourceType: 'auto',
-            deleteFromCloudinary: true,
-          },
-        },
-      })
-    : null
-
   return buildConfig({
     sharp,
     serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
@@ -68,7 +43,12 @@ export default (async () => {
       outputFile: path.resolve(dirname, 'types/payload-types.ts'),
     },
     plugins: [
-      ...(cloudinaryPlugin ? [cloudinaryPlugin] : []),
+      vercelBlobStorage({
+        collections: {
+          media: true,
+        },
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      }),
       seoPlugin({
         collections: ['products', 'categories', 'collections'],
         uploadsCollection: 'media',
