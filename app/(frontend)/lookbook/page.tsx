@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export const revalidate = 600
@@ -16,6 +17,18 @@ function formatDate(date: string): string {
 }
 
 export default async function LookbookPage() {
+  if (!hasPayloadEnv()) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <h1 className="font-display text-display-lg mb-12">Journal</h1>
+        <div className="border border-border px-6 py-16 text-center">
+          <h2 className="font-display text-3xl mb-3">No journal posts yet</h2>
+          <p className="text-muted">Journal stories will appear here once the CMS is configured.</p>
+        </div>
+      </div>
+    )
+  }
+
   const payload = await getPayload({ config })
   const { docs: posts } = await payload.find({
     collection: 'lookbook',

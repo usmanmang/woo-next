@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import CartPageClient from '@/components/cart/CartPageClient'
 import { getPayload } from 'payload'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export const metadata: Metadata = {
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 }
 
 export default async function CartPage() {
+  if (!hasPayloadEnv()) return <CartPageClient stockByProductId={{}} />
+
   const payload = await getPayload({ config })
   const { docs: products } = await payload.find({
     collection: 'products',

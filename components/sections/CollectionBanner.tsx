@@ -1,16 +1,20 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export default async function CollectionBanner() {
-  const payload = await getPayload({ config })
-  const { docs: collections } = await payload.find({
-    collection: 'collections',
-    where: { featured: { equals: true } },
-    limit: 1,
-    depth: 1,
-  })
+  const { docs: collections } = hasPayloadEnv()
+    ? await getPayload({ config })
+        .then((payload) => payload.find({
+          collection: 'collections',
+          where: { featured: { equals: true } },
+          limit: 1,
+          depth: 1,
+        }))
+        .catch(() => ({ docs: [] }))
+    : { docs: [] }
 
   const collection = collections[0]
   const heroImage = collection?.heroImage as { url?: string; alt?: string | null } | undefined

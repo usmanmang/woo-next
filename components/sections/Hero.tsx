@@ -1,12 +1,16 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export default async function Hero() {
-  const payload = await getPayload({ config })
-  const settings = await payload.findGlobal({ slug: 'site-settings', depth: 1 })
-  const hero = settings.homepageHero as Record<string, unknown> | undefined
+  const settings = hasPayloadEnv()
+    ? await getPayload({ config })
+        .then((payload) => payload.findGlobal({ slug: 'site-settings', depth: 1 }))
+        .catch(() => null)
+    : null
+  const hero = settings?.homepageHero as Record<string, unknown> | undefined
 
   const headline = (hero?.headline as string) || 'Crafted simplicity from Copenhagen'
   const subheadline = (hero?.subheadline as string) || 'Modern living, timeless design'

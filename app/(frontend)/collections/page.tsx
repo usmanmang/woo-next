@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export const revalidate = 600
@@ -27,6 +28,18 @@ function extractExcerpt(richText: RichTextContent | null | undefined, maxLen = 1
 type MediaType = { url?: string | null; alt?: string | null }
 
 export default async function CollectionsPage() {
+  if (!hasPayloadEnv()) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-2xl mb-16">
+          <p className="font-label text-xs tracking-[0.2em] uppercase text-muted mb-4">Curated Selections</p>
+          <h1 className="font-display text-display-xl mb-6">Collections</h1>
+          <p className="text-muted leading-relaxed">Collections will appear here once the CMS is configured.</p>
+        </div>
+      </div>
+    )
+  }
+
   const payload = await getPayload({ config })
   const { docs: collections } = await payload.find({
     collection: 'collections',

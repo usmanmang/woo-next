@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import '@/app/globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 const display = Cormorant_Garamond({
@@ -40,11 +41,34 @@ export const metadata: Metadata = {
 }
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
-  const payload = await getPayload({ config })
-  const [settings, navigation] = await Promise.all([
-    payload.findGlobal({ slug: 'site-settings', depth: 1 }),
-    payload.findGlobal({ slug: 'navigation', depth: 1 }),
-  ])
+  const fallbackSettings = {
+    announcementActive: false,
+    announcementBar: null,
+    footerText: 'Premium furniture for modern living.',
+    siteName: 'Furniture Studio',
+  }
+  const fallbackNavigation = {
+    mainMenu: [
+      { label: 'Home', link: '/' },
+      { label: 'Shop', link: '/shop' },
+      { label: 'Collections', link: '/collections' },
+      { label: 'Journal', link: '/lookbook' },
+      { label: 'About', link: '/about' },
+      { label: 'Contact', link: '/contact' },
+    ],
+  }
+
+  const { settings, navigation } = hasPayloadEnv()
+    ? await getPayload({ config })
+        .then(async (payload) => {
+          const [settings, navigation] = await Promise.all([
+            payload.findGlobal({ slug: 'site-settings', depth: 1 }),
+            payload.findGlobal({ slug: 'navigation', depth: 1 }),
+          ])
+          return { settings, navigation }
+        })
+        .catch(() => ({ settings: fallbackSettings, navigation: fallbackNavigation }))
+    : { settings: fallbackSettings, navigation: fallbackNavigation }
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${label.variable} scroll-smooth`}>

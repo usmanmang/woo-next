@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 function formatDate(date: string): string {
@@ -8,6 +9,8 @@ function formatDate(date: string): string {
 }
 
 export default async function LookbookTeaser() {
+  if (!hasPayloadEnv()) return null
+
   const payload = await getPayload({ config })
   const { docs: posts } = await payload.find({
     collection: 'lookbook',

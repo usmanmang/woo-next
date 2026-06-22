@@ -1,9 +1,12 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
 
 export default async function FeaturedProducts() {
+  if (!hasPayloadEnv()) return null
+
   const payload = await getPayload({ config })
   const { docs: products } = await payload.find({
     collection: 'products',
