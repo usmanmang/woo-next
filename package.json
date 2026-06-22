@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "tsx --test lib/**/*.test.ts",
     "generate:types": "tsx scripts/generate-types.ts",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "migrate:media:blob": "tsx --env-file=.env.local scripts/migrate-media-to-blob.ts"
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "^3.85.1",
