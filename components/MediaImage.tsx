@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { getSeededMediaFallbackUrl } from '@/lib/media'
 
 type MediaImageProps = {
   src?: string | null
@@ -27,7 +28,7 @@ function normalizeImageSrc(src: string) {
 
 export default function MediaImage({ src, alt, className, sizes = '100vw', priority = false }: MediaImageProps) {
   if (!src) return null
-  const imageSrc = normalizeImageSrc(src)
+  const imageSrc = getSeededMediaFallbackUrl(src) || normalizeImageSrc(src)
 
   return (
     <Image
