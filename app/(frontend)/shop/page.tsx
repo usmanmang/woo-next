@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import MediaImage from '@/components/MediaImage'
+import { hasPayloadEnv } from '@/lib/env'
 import config from '@/payload.config'
+import type { Category, Product } from '@/types/payload-types'
 
 export const revalidate = 600
 
@@ -47,21 +49,35 @@ function buildFilterHref(next: Partial<ShopSearchParams>, current: ShopSearchPar
 
 export default async function ShopPage({ searchParams }: { searchParams?: Promise<ShopSearchParams> }) {
   const filters = (await searchParams) || {}
-  const payload = await getPayload({ config })
-  const [{ docs: allProducts }, { docs: categories }] = await Promise.all([
-    payload.find({
-      collection: 'products',
-      limit: 100,
-      sort: '-createdAt',
-      depth: 1,
-    }),
-    payload.find({
-      collection: 'categories',
-      limit: 50,
-      sort: 'order',
-      depth: 1,
-    }),
-  ])
+  let allProducts: Product[] = []
+  let categories: Category[] = []
+  let isCatalogUnavailable = !hasPayloadEnv()
+
+  if (hasPayloadEnv()) {
+    try {
+      const payload = await getPayload({ config })
+      const [productResult, categoryResult] = await Promise.all([
+        payload.find({
+          collection: 'products',
+          limit: 100,
+          sort: '-createdAt',
+          depth: 1,
+        }),
+        payload.find({
+          collection: 'categories',
+          limit: 50,
+          sort: 'order',
+          depth: 1,
+        }),
+      ])
+
+      allProducts = productResult.docs
+      categories = categoryResult.docs
+    } catch (error) {
+      isCatalogUnavailable = true
+      console.error('Failed to load shop catalog', error)
+    }
+  }
 
   const products = allProducts.filter((product) => {
     const category = product.category as { slug?: string } | undefined
@@ -156,7 +172,11 @@ export default async function ShopPage({ searchParams }: { searchParams?: Promis
       {products.length === 0 && (
         <div className="border border-border px-6 py-16 text-center">
           <h2 className="font-display text-3xl mb-3">No products found</h2>
-          <p className="text-muted mb-8">Try adjusting your filters or browse the full collection.</p>
+          <p className="text-muted mb-8">
+            {isCatalogUnavailable
+              ? 'The catalog is temporarily unavailable. Please check back soon.'
+              : 'Try adjusting your filters or browse the full collection.'}
+          </p>
           <Link
             href="/shop"
             className="inline-block bg-foreground px-8 py-4 font-label text-xs tracking-[0.2em] text-background uppercase transition-colors hover:bg-accent"
